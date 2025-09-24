@@ -148,9 +148,9 @@ impl PreviewService {
             }
 
             if index >= start && lines.len() < max_lines {
-                if raw.ends_with(&[b'\n']) {
+                if raw.ends_with(b"\n") {
                     raw.pop();
-                    if raw.ends_with(&[b'\r']) {
+                    if raw.ends_with(b"\r") {
                         raw.pop();
                     }
                 }

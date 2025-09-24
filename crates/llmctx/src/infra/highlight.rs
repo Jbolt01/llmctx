@@ -196,19 +196,18 @@ impl Highlighter {
             };
         }
 
-        if let Some(name) = self
+        if let Some((name, theme)) = self
             .theme_set
             .themes
             .keys()
             .find(|name| name.eq_ignore_ascii_case(requested))
             .cloned()
+            .and_then(|name| self.theme_set.themes.get(&name).map(|theme| (name, theme)))
         {
-            if let Some(theme) = self.theme_set.themes.get(&name) {
-                return ResolvedTheme {
-                    name: Cow::Owned(name),
-                    theme,
-                };
-            }
+            return ResolvedTheme {
+                name: Cow::Owned(name),
+                theme,
+            };
         }
 
         let fallback_name = if self.theme_set.themes.contains_key(DEFAULT_THEME) {
