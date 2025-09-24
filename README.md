@@ -54,10 +54,14 @@ Session state (tree filter, focused file, selections, and model override) is aut
   - `src/infra`: Infrastructure adapters (fs, git, config, plugins, logging).
   - `src/ui`: ratatui components and app loop.
 
-## Development
-- Format: `cargo fmt --all`
-- Lint: `cargo clippy --all-targets --all-features`
-- Test: `cargo test`
+## Development Workflow
+
+- `cargo fmt --all`
+- `cargo clippy --all-targets --all-features -- -D warnings`
+- `cargo test --all-features`
+- `cargo build --workspace --release`
+
+Refer to `docs/ci-governance.md` for the full CI pipeline governance, branch protection expectations, and triage process.
 
 ## Configuration
 llmctx loads settings from the following layers (later entries override earlier ones):
