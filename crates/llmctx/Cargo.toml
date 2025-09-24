@@ -1,0 +1,33 @@
+[package]
+name = "llmctx"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+
+[dependencies]
+anyhow.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+clap.workspace = true
+clap_complete.workspace = true
+ratatui.workspace = true
+crossterm.workspace = true
+reedline.workspace = true
+ignore.workspace = true
+gix.workspace = true
+globset.workspace = true
+regex.workspace = true
+grep-searcher.workspace = true
+rayon.workspace = true
+tiktoken-rs.workspace = true
+syntect.workspace = true
+arboard.workspace = true
+notify.workspace = true
+minijinja.workspace = true
+dashmap.workspace = true
+parking_lot.workspace = true
+serde_yaml.workspace = true
