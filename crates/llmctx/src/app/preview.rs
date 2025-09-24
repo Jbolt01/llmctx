@@ -180,9 +180,9 @@ impl PreviewService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::infra::highlight::HighlightMode;
     use std::io::Write;
     use tempfile::tempdir;
-    use crate::infra::highlight::HighlightMode;
 
     fn config() -> Config {
         Config::default()
