@@ -57,6 +57,11 @@ up = "k"
 down = "j"
 select = "space"
 export = "ctrl+e"
+
+[preview]
+theme = "dracula"
+max_lines = 400
+load_more_step = 200
 ```
 
 ## CI
