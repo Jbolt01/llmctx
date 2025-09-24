@@ -301,7 +301,16 @@ fn extract_selection_contents(
     let (raw_start, raw_end) = item.range.unwrap_or((1, total_lines.max(1)));
     let start = raw_start.max(1);
     let end = raw_end.max(start);
-    let available_end = if total_lines == 0 { 0 } else { total_lines };
+    if total_lines == 0 || start > total_lines {
+        return Ok(SelectionExtraction {
+            contents: String::new(),
+            start_line: None,
+            end_line: None,
+            character_count: 0,
+        });
+    }
+
+    let available_end = total_lines;
     let clamped_start = if available_end == 0 {
         start
     } else {
