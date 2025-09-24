@@ -31,3 +31,6 @@ minijinja.workspace = true
 dashmap.workspace = true
 parking_lot.workspace = true
 serde_yaml.workspace = true
+dirs-next.workspace = true
+once_cell.workspace = true
+tempfile.workspace = true

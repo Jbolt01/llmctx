@@ -1,0 +1,22 @@
+[defaults]
+model = "openai:gpt-4o-mini"
+export_format = "markdown"
+token_budget = 120000
+theme = "dracula"
+preview_max_lines = 400
+show_hidden = false
+
+[ignore]
+paths = ["target/", "node_modules/", "dist/", ".git/"]
+globs = ["*.min.js", "*.lock"]
+
+[export]
+include_git_metadata = true
+include_line_numbers = true
+template = "concise_context"
+
+[keybindings]
+up = "k"
+down = "j"
+select = "space"
+export = "ctrl+e"
