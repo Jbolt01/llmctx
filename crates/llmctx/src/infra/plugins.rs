@@ -1,5 +1,6 @@
 //! Plugin discovery and execution.
 
+#[derive(Default)]
 pub struct PluginHost;
 
 impl PluginHost {

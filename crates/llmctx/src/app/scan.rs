@@ -1,5 +1,6 @@
 //! Repository scanning services.
 
+#[derive(Default)]
 pub struct Scanner;
 
 impl Scanner {

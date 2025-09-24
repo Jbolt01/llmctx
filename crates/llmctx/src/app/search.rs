@@ -1,5 +1,6 @@
 //! Repository search services.
 
+#[derive(Default)]
 pub struct Search;
 
 impl Search {

@@ -1,5 +1,6 @@
 //! Session persistence utilities.
 
+#[derive(Default)]
 pub struct SessionStore;
 
 impl SessionStore {

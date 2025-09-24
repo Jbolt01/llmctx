@@ -1,5 +1,6 @@
 //! Clipboard integration utilities.
 
+#[derive(Default)]
 pub struct Clipboard;
 
 impl Clipboard {

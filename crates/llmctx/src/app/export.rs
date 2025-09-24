@@ -1,5 +1,6 @@
 //! Export bundle handling.
 
+#[derive(Default)]
 pub struct Exporter;
 
 impl Exporter {

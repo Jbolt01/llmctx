@@ -1,5 +1,6 @@
 //! Application loop for the TUI.
 
+#[derive(Default)]
 pub struct UiApp;
 
 impl UiApp {
