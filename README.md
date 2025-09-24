@@ -11,6 +11,41 @@ llmctx is a Rust-based terminal UI for assembling curated code context for large
 cargo run -p llmctx
 ```
 
+### Interactive TUI
+
+Launching `cargo run -p llmctx` opens a full-screen terminal experience composed of:
+
+- **Workspace tree** (left) – browse the repository, expand/collapse folders, and toggle selections.
+- **Preview** (center) – syntax-highlighted file view with incremental loading for large files.
+- **Selection summary** (right) – live token estimates and export readiness.
+- **Command hints & status** (bottom) – discoverable shortcuts and contextual feedback.
+
+#### Core keybindings
+
+| Keys | Action |
+| --- | --- |
+| `j` / `↓` &nbsp;&nbsp;`k` / `↑` | Move through the file tree |
+| `h` / `←` | Collapse directory or jump to parent |
+| `l` / `→` / `Enter` | Expand directory or open preview |
+| `Tab` | Switch between tree and preview panes |
+| `Space` | Toggle whole-file selection |
+| `Shift` + `↑` / `↓` | Grow or shrink a line range selection in the preview |
+| `/` | Start incremental filter on the file tree |
+| `:` | Open the command palette |
+| `Ctrl+S` | Persist the current session to `.llmctx/session.json` |
+| `Ctrl+E` | Export the active selection bundle (writes to `.llmctx/exports/` and copies to clipboard) |
+| `q` / `Ctrl+Q` | Quit |
+
+The command palette supports quick actions such as:
+
+- `filter <pattern>` – apply a name filter to the file tree
+- `select <start-end>` – add a specific line range for the active preview
+- `export [path]` – write the current bundle to an explicit path
+- `save` – persist selections and UI state
+- `model <id>` – switch the active token model
+
+Session state (tree filter, focused file, selections, and model override) is automatically reloaded on startup when `.llmctx/session.json` is present.
+
 ## Project Structure
 - `Cargo.toml`: Workspace manifest.
 - `crates/llmctx`: Main binary crate.

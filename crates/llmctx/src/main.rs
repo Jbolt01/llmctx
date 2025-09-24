@@ -19,7 +19,7 @@ fn main() -> Result<()> {
 }
 
 fn run_tui() -> Result<()> {
-    let mut app = llmctx::ui::app::UiApp;
+    let mut app = llmctx::ui::app::UiApp::default();
     app.run()
 }
 
