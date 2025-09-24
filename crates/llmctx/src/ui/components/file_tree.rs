@@ -3,8 +3,4 @@
 #[derive(Default)]
 pub struct FileTree;
 
-impl FileTree {
-    pub fn new() -> Self {
-        Self
-    }
-}
+impl FileTree {}
