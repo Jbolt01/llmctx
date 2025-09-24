@@ -40,6 +40,11 @@ impl SelectionManager {
         self.model = None;
     }
 
+    /// Access the configured model if set.
+    pub fn model(&self) -> Option<&str> {
+        self.model.as_deref()
+    }
+
     /// Access the active selections.
     pub fn items(&self) -> &[SelectionItem] {
         &self.items

@@ -11,7 +11,14 @@ use crate::infra::highlight::HighlightSpan;
 pub struct Preview;
 
 impl Preview {
-    pub fn render(&self, segment: &PreviewSegment, area: Rect, buf: &mut Buffer) {
+    pub fn render(
+        &self,
+        segment: &PreviewSegment,
+        selected_ranges: &[(usize, usize)],
+        has_focus: bool,
+        area: Rect,
+        buf: &mut Buffer,
+    ) {
         let title = format!(
             "{} ({}-{})",
             segment.path.display(),
@@ -19,7 +26,15 @@ impl Preview {
             segment.end_line
         );
 
-        let block = Block::default().title(title).borders(Borders::ALL);
+        let border_color = if has_focus {
+            Color::Cyan
+        } else {
+            Color::DarkGray
+        };
+        let block = Block::default()
+            .title(title)
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(border_color));
         let inner = block.inner(area);
         block.render(area, buf);
 
@@ -27,8 +42,18 @@ impl Preview {
         for (idx, line) in segment.highlighted.lines.iter().enumerate() {
             let line_number = segment.start_line + idx;
             let prefix = format!("{:>4} │ ", line_number);
-            let mut spans = vec![Span::styled(prefix, Style::default().fg(Color::DarkGray))];
-            spans.extend(line.spans.iter().map(highlight_span_to_span));
+            let selected = is_line_selected(line_number, selected_ranges);
+            let mut spans = vec![Span::styled(
+                prefix,
+                Style::default()
+                    .fg(Color::DarkGray)
+                    .bg(selection_background(selected)),
+            )];
+            spans.extend(
+                line.spans
+                    .iter()
+                    .map(|span| highlight_span_to_span(span, selected)),
+            );
             lines.push(Line::from(spans));
         }
 
@@ -70,8 +95,8 @@ impl Preview {
     }
 }
 
-fn highlight_span_to_span(span: &HighlightSpan) -> Span<'_> {
-    let mut style = Style::default();
+fn highlight_span_to_span(span: &HighlightSpan, selected: bool) -> Span<'_> {
+    let mut style = Style::default().bg(selection_background(selected));
 
     if let Some(color) = span.style.foreground {
         style = style.fg(Color::Rgb(color.r, color.g, color.b));
@@ -91,4 +116,18 @@ fn highlight_span_to_span(span: &HighlightSpan) -> Span<'_> {
     }
 
     Span::styled(span.content.clone(), style)
+}
+
+fn is_line_selected(line: usize, ranges: &[(usize, usize)]) -> bool {
+    ranges
+        .iter()
+        .any(|(start, end)| line >= *start && line <= *end)
+}
+
+fn selection_background(selected: bool) -> Color {
+    if selected {
+        Color::Rgb(32, 52, 70)
+    } else {
+        Color::Reset
+    }
 }
