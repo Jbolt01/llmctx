@@ -1,4 +1,1 @@
-warns = [
-    "clippy::pedantic",
-    "clippy::nursery"
-]
+
