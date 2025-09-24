@@ -102,12 +102,12 @@ impl Default for Ignore {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Export {
-    #[serde(default = "Export::default_include_git_metadata")]
-    pub include_git_metadata: bool,
-    #[serde(default = "Export::default_include_line_numbers")]
-    pub include_line_numbers: bool,
-    #[serde(default = "Export::default_template")]
-    pub template: String,
+    #[serde(default)]
+    include_git_metadata: Option<bool>,
+    #[serde(default)]
+    include_line_numbers: Option<bool>,
+    #[serde(default)]
+    template: Option<String>,
 }
 
 impl Export {
@@ -119,17 +119,33 @@ impl Export {
         true
     }
 
-    fn default_template() -> String {
-        "concise_context".into()
+    fn default_template() -> &'static str {
+        "concise_context"
+    }
+
+    pub fn include_git_metadata(&self) -> bool {
+        self.include_git_metadata
+            .unwrap_or_else(Self::default_include_git_metadata)
+    }
+
+    pub fn include_line_numbers(&self) -> bool {
+        self.include_line_numbers
+            .unwrap_or_else(Self::default_include_line_numbers)
+    }
+
+    pub fn template(&self) -> String {
+        self.template
+            .clone()
+            .unwrap_or_else(|| Self::default_template().to_owned())
     }
 }
 
 impl Default for Export {
     fn default() -> Self {
         Self {
-            include_git_metadata: Self::default_include_git_metadata(),
-            include_line_numbers: Self::default_include_line_numbers(),
-            template: Self::default_template(),
+            include_git_metadata: Some(Self::default_include_git_metadata()),
+            include_line_numbers: Some(Self::default_include_line_numbers()),
+            template: Some(Self::default_template().to_owned()),
         }
     }
 }
@@ -295,16 +311,17 @@ fn merge_ignore(base: Ignore, overlay: Ignore) -> Ignore {
     }
 }
 
-fn merge_export(base: Export, overlay: Export) -> Export {
-    Export {
-        include_git_metadata: overlay.include_git_metadata,
-        include_line_numbers: overlay.include_line_numbers,
-        template: if overlay.template != Export::default_template() {
-            overlay.template
-        } else {
-            base.template
-        },
+fn merge_export(mut base: Export, overlay: Export) -> Export {
+    if let Some(value) = overlay.include_git_metadata {
+        base.include_git_metadata = Some(value);
     }
+    if let Some(value) = overlay.include_line_numbers {
+        base.include_line_numbers = Some(value);
+    }
+    if let Some(value) = overlay.template {
+        base.template = Some(value);
+    }
+    base
 }
 
 fn merge_keybindings(base: Keybindings, overlay: Keybindings) -> Keybindings {
