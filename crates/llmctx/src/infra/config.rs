@@ -251,6 +251,18 @@ impl Config {
         Self::load_with_layers(global, workspace, env)
     }
 
+    /// Load configuration from a single explicit path layered on top of defaults.
+    pub fn load_from_path(path: &Path) -> Result<Self> {
+        let defaults = Self::from_str(&DEFAULT_CONFIG)?;
+        let explicit = Self::from_file(path)?;
+        Ok(defaults.merge(explicit))
+    }
+
+    /// Merge another configuration on top of this instance, returning the combined result.
+    pub fn merge_with(self, other: Config) -> Config {
+        self.merge(other)
+    }
+
     fn load_with_layers(
         global: Option<PathBuf>,
         workspace: Option<PathBuf>,

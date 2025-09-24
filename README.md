@@ -76,5 +76,23 @@ The token estimator supports the following model identifiers:
 
 Set `defaults.model` in the configuration or `LLMCTX_MODEL` in the environment to switch the active model. `defaults.token_budget` defines the maximum context window displayed in the TUI summary. When a precise tokenizer is unavailable, llmctx falls back to configurable character/word heuristics so estimates remain available offline.
 
+## Exporting Context
+
+Selections can be exported directly from the command line without launching the TUI. Use the `export` subcommand to specify files or ranges and control output:
+
+```sh
+# Export two files using the default Markdown template, writing to stdout and clipboard
+llmctx export src/lib.rs src/main.rs --copy --print
+
+# Export a line range with an inline note using the plain text template
+llmctx export \
+  --select "src/app/mod.rs:10-80#core wiring" \
+  --format plain \
+  --template plain_text \
+  --output context.txt
+```
+
+Selections accept the format `path[:start-end][#note]`. Ranges are inclusive and line-numbered output is enabled by default (configurable via `export.include_line_numbers`). The exporter respects configuration defaults for the target model, templates, and git metadata. Rendered output can be written to disk, copied to the clipboard, and/or printed to stdout in a single invocation.
+
 ## CI
 GitHub Actions workflow runs fmt, clippy, and tests on pushes and pull requests.
