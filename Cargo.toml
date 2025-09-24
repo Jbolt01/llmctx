@@ -36,4 +36,7 @@ minijinja = "1"
 dashmap = "5"
 parking_lot = "0.12"
 serde_yaml = "0.9"
+dirs-next = "2"
+once_cell = "1"
+tempfile = "3"
 

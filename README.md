@@ -24,5 +24,40 @@ cargo run -p llmctx
 - Lint: `cargo clippy --all-targets --all-features`
 - Test: `cargo test`
 
+## Configuration
+llmctx loads settings from the following layers (later entries override earlier ones):
+
+1. Built-in defaults (bundled `crates/llmctx/assets/default-config.toml`).
+2. User config at `${XDG_CONFIG_HOME:-~/.config}/llmctx/config.toml`.
+3. Workspace override at `<repo>/.llmctx/config.toml`.
+4. Environment variables (`LLMCTX_MODEL`, `LLMCTX_EXPORT_FORMAT`).
+
+Example TOML:
+
+```toml
+[defaults]
+model = "openai:gpt-4o-mini"
+export_format = "markdown"
+token_budget = 120000
+theme = "dracula"
+preview_max_lines = 400
+show_hidden = false
+
+[ignore]
+paths = ["target/", "dist/"]
+globs = ["*.lock"]
+
+[export]
+include_git_metadata = true
+include_line_numbers = true
+template = "concise_context"
+
+[keybindings]
+up = "k"
+down = "j"
+select = "space"
+export = "ctrl+e"
+```
+
 ## CI
 GitHub Actions workflow runs fmt, clippy, and tests on pushes and pull requests.
