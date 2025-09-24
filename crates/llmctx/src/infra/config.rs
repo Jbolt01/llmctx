@@ -29,51 +29,78 @@ pub struct Config {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Defaults {
-    #[serde(default = "Defaults::default_model")]
-    pub model: String,
-    #[serde(default = "Defaults::default_export_format")]
-    pub export_format: String,
-    #[serde(default = "Defaults::default_token_budget")]
-    pub token_budget: u32,
-    #[serde(default = "Defaults::default_theme")]
-    pub theme: String,
-    #[serde(default = "Defaults::default_preview_max_lines")]
-    pub preview_max_lines: usize,
     #[serde(default)]
-    pub show_hidden: bool,
+    model: Option<String>,
+    #[serde(default)]
+    export_format: Option<String>,
+    #[serde(default)]
+    token_budget: Option<u32>,
+    #[serde(default)]
+    theme: Option<String>,
+    #[serde(default)]
+    preview_max_lines: Option<usize>,
+    #[serde(default)]
+    show_hidden: Option<bool>,
 }
 
 impl Defaults {
-    fn default_model() -> String {
-        "openai:gpt-4o-mini".to_owned()
+    fn default_model() -> &'static str {
+        "openai:gpt-4o-mini"
     }
 
-    fn default_export_format() -> String {
-        "markdown".into()
+    fn default_export_format() -> &'static str {
+        "markdown"
     }
 
     fn default_token_budget() -> u32 {
         120_000
     }
 
-    fn default_theme() -> String {
-        "dracula".into()
+    fn default_theme() -> &'static str {
+        "dracula"
     }
 
     fn default_preview_max_lines() -> usize {
         400
+    }
+
+    pub fn model(&self) -> &str {
+        self.model.as_deref().unwrap_or(Self::default_model())
+    }
+
+    pub fn export_format(&self) -> &str {
+        self.export_format
+            .as_deref()
+            .unwrap_or(Self::default_export_format())
+    }
+
+    pub fn token_budget(&self) -> u32 {
+        self.token_budget.unwrap_or_else(Self::default_token_budget)
+    }
+
+    pub fn theme(&self) -> &str {
+        self.theme.as_deref().unwrap_or(Self::default_theme())
+    }
+
+    pub fn preview_max_lines(&self) -> usize {
+        self.preview_max_lines
+            .unwrap_or_else(Self::default_preview_max_lines)
+    }
+
+    pub fn show_hidden(&self) -> bool {
+        self.show_hidden.unwrap_or(false)
     }
 }
 
 impl Default for Defaults {
     fn default() -> Self {
         Self {
-            model: Self::default_model(),
-            export_format: Self::default_export_format(),
-            token_budget: Self::default_token_budget(),
-            theme: Self::default_theme(),
-            preview_max_lines: Self::default_preview_max_lines(),
-            show_hidden: false,
+            model: Some(Self::default_model().to_owned()),
+            export_format: Some(Self::default_export_format().to_owned()),
+            token_budget: Some(Self::default_token_budget()),
+            theme: Some(Self::default_theme().to_owned()),
+            preview_max_lines: Some(Self::default_preview_max_lines()),
+            show_hidden: Some(false),
         }
     }
 }
@@ -267,35 +294,26 @@ impl Config {
     }
 }
 
-fn merge_defaults(base: Defaults, overlay: Defaults) -> Defaults {
-    Defaults {
-        model: if overlay.model != Defaults::default_model() {
-            overlay.model
-        } else {
-            base.model
-        },
-        export_format: if overlay.export_format != Defaults::default_export_format() {
-            overlay.export_format
-        } else {
-            base.export_format
-        },
-        token_budget: if overlay.token_budget != Defaults::default_token_budget() {
-            overlay.token_budget
-        } else {
-            base.token_budget
-        },
-        theme: if overlay.theme != Defaults::default_theme() {
-            overlay.theme
-        } else {
-            base.theme
-        },
-        preview_max_lines: if overlay.preview_max_lines != Defaults::default_preview_max_lines() {
-            overlay.preview_max_lines
-        } else {
-            base.preview_max_lines
-        },
-        show_hidden: overlay.show_hidden || base.show_hidden,
+fn merge_defaults(mut base: Defaults, overlay: Defaults) -> Defaults {
+    if overlay.model.is_some() {
+        base.model = overlay.model;
     }
+    if overlay.export_format.is_some() {
+        base.export_format = overlay.export_format;
+    }
+    if overlay.token_budget.is_some() {
+        base.token_budget = overlay.token_budget;
+    }
+    if overlay.theme.is_some() {
+        base.theme = overlay.theme;
+    }
+    if overlay.preview_max_lines.is_some() {
+        base.preview_max_lines = overlay.preview_max_lines;
+    }
+    if overlay.show_hidden.is_some() {
+        base.show_hidden = overlay.show_hidden;
+    }
+    base
 }
 
 fn merge_ignore(base: Ignore, overlay: Ignore) -> Ignore {
@@ -366,10 +384,10 @@ fn find_repo_root(start: &Path) -> Option<PathBuf> {
 
 fn apply_env_overrides(mut config: Config, env: EnvOverrides) -> Config {
     if let Some(model) = env.model {
-        config.defaults.model = model;
+        config.defaults.model = Some(model);
     }
     if let Some(export_format) = env.export_format {
-        config.defaults.export_format = export_format;
+        config.defaults.export_format = Some(export_format);
     }
     config
 }
@@ -382,7 +400,7 @@ mod tests {
     fn load_uses_defaults_when_no_files() {
         let config = Config::load_with_layers(None, None, EnvOverrides::default())
             .expect("load default config");
-        assert_eq!(config.defaults.model, "openai:gpt-4o-mini");
+        assert_eq!(config.defaults.model(), "openai:gpt-4o-mini");
         assert!(config.ignore.paths.contains(&"target/".into()));
     }
 
@@ -419,8 +437,8 @@ globs = ["*.cache"]
         let config =
             Config::load_with_layers(global_path, workspace_path, EnvOverrides::default())?;
 
-        assert_eq!(config.defaults.model, "anthropic:claude");
-        assert_eq!(config.defaults.export_format, "json");
+        assert_eq!(config.defaults.model(), "anthropic:claude");
+        assert_eq!(config.defaults.export_format(), "json");
         assert!(config.ignore.paths.contains(&"generated/".into()));
         assert!(config.ignore.globs.contains(&"*.cache".into()));
 
@@ -431,8 +449,8 @@ globs = ["*.cache"]
     fn env_overrides_take_precedence() -> Result<()> {
         let overrides = EnvOverrides::for_tests("openai:gpt-test", "plain");
         let config = Config::load_with_layers(None, None, overrides)?;
-        assert_eq!(config.defaults.model, "openai:gpt-test");
-        assert_eq!(config.defaults.export_format, "plain");
+        assert_eq!(config.defaults.model(), "openai:gpt-test");
+        assert_eq!(config.defaults.export_format(), "plain");
         Ok(())
     }
 
