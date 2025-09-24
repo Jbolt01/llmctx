@@ -59,5 +59,17 @@ select = "space"
 export = "ctrl+e"
 ```
 
+### Token estimation
+
+The token estimator supports the following model identifiers:
+
+- `openai:gpt-4o`
+- `openai:gpt-4o-mini`
+- `anthropic:claude-3-haiku`
+- `anthropic:claude-3.5-sonnet`
+- `fallback:characters` (heuristic character/word counter)
+
+Set `defaults.model` in the configuration or `LLMCTX_MODEL` in the environment to switch the active model. `defaults.token_budget` defines the maximum context window displayed in the TUI summary. When a precise tokenizer is unavailable, llmctx falls back to configurable character/word heuristics so estimates remain available offline.
+
 ## CI
 GitHub Actions workflow runs fmt, clippy, and tests on pushes and pull requests.
