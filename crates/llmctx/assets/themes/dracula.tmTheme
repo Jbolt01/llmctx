@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>Dracula</string>
+    <key>settings</key>
+    <array>
+        <dict>
+            <key>settings</key>
+            <dict>
+                <key>background</key>
+                <string>#282a36</string>
+                <key>caret</key>
+                <string>#f8f8f0</string>
+                <key>foreground</key>
+                <string>#f8f8f2</string>
+                <key>selection</key>
+                <string>#44475a</string>
+            </dict>
+        </dict>
+    </array>
+    <key>uuid</key>
+    <string>CFAD909A-66D3-4039-90F7-D113402E3472</string>
+</dict>
+</plist>

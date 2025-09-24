@@ -1,6 +1,7 @@
 //! Application layer orchestrating domain logic and infrastructure.
 
 pub mod export;
+pub mod preview;
 pub mod scan;
 pub mod search;
 pub mod selection;
