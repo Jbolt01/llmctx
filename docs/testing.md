@@ -30,11 +30,8 @@ CI publishes JUnit XML artifacts for downstream tooling. To reproduce locally:
 # Install once (skipped if already present)
 cargo install cargo2junit --locked
 
-cargo test --all-features -- --format json --report-time \
-  | cargo2junit > target/dev-junit.xml
-
-cargo test --all-features --release -- --format json --report-time \
-  | cargo2junit > target/release-junit.xml
+cargo nextest run --profile ci --workspace --tests --examples --cargo-profile release --message-format libtest-json \
+  | cargo2junit > target/nextest-junit.xml
 ```
 
 JUnit files live under `target/` and can be ingested by IDEs or reporting dashboards.

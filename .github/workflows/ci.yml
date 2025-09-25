@@ -111,30 +111,30 @@ jobs:
         if: matrix.profile == 'dev'
         run: |
           set -eo pipefail
-          cargo test --all-features --no-fail-fast -- --format json --report-time \
-            | tee target/cargo-test-dev.json \
-            | cargo2junit > target/dev-junit.xml
+          cargo test --all-features --no-fail-fast
       - name: Run tests (release profile)
         if: matrix.profile == 'release'
         env:
           RUSTFLAGS: "-C debuginfo=0"
         run: |
           set -eo pipefail
-          cargo test --all-features --release --no-fail-fast -- --format json --report-time \
-            | tee target/cargo-test-release.json \
-            | cargo2junit > target/release-junit.xml
+          cargo test --all-features --release --no-fail-fast
       - name: Run tests (nextest)
         if: matrix.profile == 'nextest'
+        env:
+          NEXTEST_PROFILE: ci
+          NEXTEST_EXPERIMENTAL_LIBTEST_JSON: 1
         run: |
-          cargo nextest run --profile ci --workspace --tests --examples --cargo-profile release \
-            --junit-output target/nextest-junit.xml
+          set -eo pipefail
+          cargo nextest run --profile ci --workspace --tests --examples --cargo-profile release
+          cargo nextest run --profile ci --workspace --tests --examples --cargo-profile release --message-format libtest-json \
+            | cargo2junit > target/nextest-junit.xml
       - name: Archive test logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-logs-${{ matrix.profile }}
           path: |
-            target/cargo-test-${{ matrix.profile }}.json
             target/${{ matrix.profile }}-junit.xml
             target/nextest-junit.xml
           if-no-files-found: ignore
@@ -151,16 +151,12 @@ jobs:
             echo "## Test summary (${{ matrix.profile }})";
             case "${{ matrix.profile }}" in
               dev)
-                echo "- cargo test --all-features --no-fail-fast -- --format json --report-time";
-                echo "- raw log: cargo-test-dev.json";
-                echo "- junit artifact: junit-dev";
-                echo "- coverage: grcov (debug profile)";
+                echo "- cargo test --all-features --no-fail-fast";
+                echo "- raw log: cargo-test-dev.log";
                 ;;
               release)
-                echo "- cargo test --all-features --release --no-fail-fast -- --format json --report-time";
-                echo "- raw log: cargo-test-release.json";
-                echo "- junit artifact: junit-release";
-                echo "- coverage: grcov (release mapping)";
+                echo "- cargo test --all-features --release --no-fail-fast";
+                echo "- raw log: cargo-test-release.log";
                 ;;
               nextest)
                 echo "- cargo nextest run --profile ci --cargo-profile release";
