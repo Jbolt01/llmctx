@@ -61,7 +61,7 @@ Session state (tree filter, focused file, selections, and model override) is aut
 - `cargo test --all-features`
 - `cargo build --workspace --release`
 
-Refer to `docs/ci-governance.md` for the full CI pipeline governance, branch protection expectations, and triage process.
+Refer to `docs/ci-governance.md` and `docs/linting.md` for governance details and lint troubleshooting tips.
 
 ## Configuration
 llmctx loads settings from the following layers (later entries override earlier ones):
