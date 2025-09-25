@@ -7,7 +7,7 @@ This guide explains how to reproduce the CI lint job locally, interpret failures
 Install the stable Rust toolchain with components:
 
 ```sh
-rustup toolchain install stable --component rustfmt clippy
+rustup toolchain install stable --component rustfmt --component clippy
 rustup default stable
 ```
 
