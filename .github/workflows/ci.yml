@@ -81,8 +81,11 @@ jobs:
   governance-test:
     name: Test Suite
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     needs: governance-lint
+    strategy:
+      matrix:
+        profile: [dev, release]
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -91,13 +94,61 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-      - name: Run tests
-        run: cargo test --all-features
+          shared-key: test-${{ matrix.profile }}
+      - name: Install tooling
+        run: |
+          if ! command -v cargo2junit >/dev/null 2>&1; then
+            cargo install cargo2junit --locked
+          fi
+      - name: Prepare integration fixtures
+        run: |
+          mkdir -p target/test-fixtures
+          echo "{}" > target/test-fixtures/default-config.json
+      - name: Run tests (dev profile)
+        if: matrix.profile == 'dev'
+        run: |
+          set -eo pipefail
+          cargo test --all-features --no-fail-fast -- --format json --report-time \
+            | tee target/cargo-test-dev.json \
+            | cargo2junit > target/dev-junit.xml
+      - name: Run tests (release profile)
+        if: matrix.profile == 'release'
+        env:
+          RUSTFLAGS: "-C debuginfo=0"
+        run: |
+          set -eo pipefail
+          cargo test --all-features --release --no-fail-fast -- --format json --report-time \
+            | tee target/cargo-test-release.json \
+            | cargo2junit > target/release-junit.xml
+      - name: Archive test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.profile }}
+          path: |
+            target/cargo-test-${{ matrix.profile }}.json
+            target/${{ matrix.profile }}-junit.xml
+          if-no-files-found: ignore
+      - name: Upload junit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.profile }}
+          path: target/${{ matrix.profile }}-junit.xml
+          if-no-files-found: ignore
       - name: Job summary
         run: |
           {
-            echo "## Test summary";
-            echo "- cargo test --all-features";
+            echo "## Test summary (${{ matrix.profile }})";
+            if [ "${{ matrix.profile }}" = "dev" ]; then
+              echo "- cargo test --all-features --no-fail-fast -- --format json --report-time";
+              echo "- raw log: cargo-test-dev.json";
+              echo "- junit artifact: junit-dev";
+            else
+              echo "- cargo test --all-features --release --no-fail-fast -- --format json --report-time";
+              echo "- raw log: cargo-test-release.json";
+              echo "- junit artifact: junit-release";
+            fi;
           } >> "$GITHUB_STEP_SUMMARY"
 
   governance-build:
