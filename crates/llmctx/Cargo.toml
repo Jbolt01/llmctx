@@ -35,3 +35,6 @@ dirs-next.workspace = true
 once_cell.workspace = true
 tempfile.workspace = true
 time = { version = "0.3", features = ["formatting", "macros"] }
+insta.workspace = true
+assert_cmd.workspace = true
+predicates.workspace = true

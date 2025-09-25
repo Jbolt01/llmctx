@@ -81,11 +81,11 @@ jobs:
   governance-test:
     name: Test Suite
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     needs: governance-lint
     strategy:
       matrix:
-        profile: [dev, release]
+        profile: [dev, release, nextest]
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -99,6 +99,9 @@ jobs:
         run: |
           if ! command -v cargo2junit >/dev/null 2>&1; then
             cargo install cargo2junit --locked
+          fi
+          if ! command -v cargo-nextest >/dev/null 2>&1; then
+            cargo install cargo-nextest --locked
           fi
       - name: Prepare integration fixtures
         run: |
@@ -120,6 +123,11 @@ jobs:
           cargo test --all-features --release --no-fail-fast -- --format json --report-time \
             | tee target/cargo-test-release.json \
             | cargo2junit > target/release-junit.xml
+      - name: Run tests (nextest)
+        if: matrix.profile == 'nextest'
+        run: |
+          cargo nextest run --profile ci --workspace --tests --examples --cargo-profile release \
+            --junit-output target/nextest-junit.xml
       - name: Archive test logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -128,6 +136,7 @@ jobs:
           path: |
             target/cargo-test-${{ matrix.profile }}.json
             target/${{ matrix.profile }}-junit.xml
+            target/nextest-junit.xml
           if-no-files-found: ignore
       - name: Upload junit report
         if: always()
@@ -140,15 +149,25 @@ jobs:
         run: |
           {
             echo "## Test summary (${{ matrix.profile }})";
-            if [ "${{ matrix.profile }}" = "dev" ]; then
-              echo "- cargo test --all-features --no-fail-fast -- --format json --report-time";
-              echo "- raw log: cargo-test-dev.json";
-              echo "- junit artifact: junit-dev";
-            else
-              echo "- cargo test --all-features --release --no-fail-fast -- --format json --report-time";
-              echo "- raw log: cargo-test-release.json";
-              echo "- junit artifact: junit-release";
-            fi;
+            case "${{ matrix.profile }}" in
+              dev)
+                echo "- cargo test --all-features --no-fail-fast -- --format json --report-time";
+                echo "- raw log: cargo-test-dev.json";
+                echo "- junit artifact: junit-dev";
+                echo "- coverage: grcov (debug profile)";
+                ;;
+              release)
+                echo "- cargo test --all-features --release --no-fail-fast -- --format json --report-time";
+                echo "- raw log: cargo-test-release.json";
+                echo "- junit artifact: junit-release";
+                echo "- coverage: grcov (release mapping)";
+                ;;
+              nextest)
+                echo "- cargo nextest run --profile ci --cargo-profile release";
+                echo "- junit artifact: junit-nextest";
+                echo "- targeted retries: nextest per-profile settings";
+                ;;
+            esac
           } >> "$GITHUB_STEP_SUMMARY"
 
   governance-build:

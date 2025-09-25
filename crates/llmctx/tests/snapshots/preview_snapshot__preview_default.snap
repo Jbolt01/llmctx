@@ -1,0 +1,9 @@
+---
+source: crates/llmctx/tests/preview_snapshot.rs
+expression: rendered
+---
+```
+fn main() {
+    println!("hello");
+}
+```
