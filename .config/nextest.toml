@@ -1,0 +1,19 @@
+[profile.default]
+fail-fast = false
+retries = 0
+
+[profile.ci]
+fail-fast = false
+status-level = "fail"
+final-status-level = "fail"
+slow-timeout = { period = "60s", terminate-after = 2 }
+retries = 1
+test-threads = "num-cpus"
+leak-detection = "warn"
+failure-output = "final"
+success-output = "never"
+
+[profile.local]
+fail-fast = false
+retries = 1
+slow-timeout = { period = "30s", terminate-after = 2 }

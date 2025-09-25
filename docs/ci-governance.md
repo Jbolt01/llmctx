@@ -16,7 +16,7 @@ The workflow name is `CI`. It contains the following stages, executed as separat
 | Job | Purpose | Trigger | Required Status |
 | --- | --- | --- | --- |
 | `governance-lint` | Formatting and Clippy linting | PRs, pushes to `main` | Required |
-| `governance-test` | Unit and integration tests | PRs, pushes to `main` | Required |
+| `governance-test` | Unit & integration tests (dev + release) | PRs, pushes to `main` | Required |
 | `governance-build` | Verifies release build compiles | PRs, pushes to `main` | Required |
 | `governance-security` | Security placeholder (cargo audit, SBOM) | PRs, pushes to `main` | Required once tooling lands |
 
@@ -30,9 +30,10 @@ The workflow is defined in `.github/workflows/ci.yml` and leverages a reusable s
 - Fails fast so contributors address style issues before functional failures.
 
 **governance-test**
-- Executes `cargo test --all-features`.
-- Emits a summary with total tests executed and runtime to monitor flakiness.
-- Future scope: split into unit/integration matrices when runtime requires.
+- Executes a matrix across debug (`cargo test --all-features --no-fail-fast`) and release (`cargo test --all-features --release --no-fail-fast`) profiles.
+- Captures JSON output and converts it with `cargo2junit`, uploading artifacts for dashboards or IDE consumption.
+- Archives raw logs when failures occur and prepares scratch fixtures under `target/test-fixtures/` for integration tests.
+- Future scope: add optional coverage jobs (`cargo tarpaulin`) and OS matrices once runtime analysis justifies it.
 
 **governance-build**
 - Builds optimized binaries via `cargo build --workspace --release`.

@@ -81,8 +81,11 @@ jobs:
   governance-test:
     name: Test Suite
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     needs: governance-lint
+    strategy:
+      matrix:
+        profile: [dev, release, nextest]
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -91,13 +94,76 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-      - name: Run tests
-        run: cargo test --all-features
+          shared-key: test-${{ matrix.profile }}
+      - name: Install tooling
+        run: |
+          if ! command -v cargo2junit >/dev/null 2>&1; then
+            cargo install cargo2junit --locked
+          fi
+          if ! command -v cargo-nextest >/dev/null 2>&1; then
+            cargo install cargo-nextest --locked
+          fi
+      - name: Prepare integration fixtures
+        run: |
+          mkdir -p target/test-fixtures
+          echo "{}" > target/test-fixtures/default-config.json
+      - name: Run tests (dev profile)
+        if: matrix.profile == 'dev'
+        run: |
+          set -eo pipefail
+          cargo test --all-features --no-fail-fast
+      - name: Run tests (release profile)
+        if: matrix.profile == 'release'
+        env:
+          RUSTFLAGS: "-C debuginfo=0"
+        run: |
+          set -eo pipefail
+          cargo test --all-features --release --no-fail-fast
+      - name: Run tests (nextest)
+        if: matrix.profile == 'nextest'
+        env:
+          NEXTEST_PROFILE: ci
+          NEXTEST_EXPERIMENTAL_LIBTEST_JSON: 1
+        run: |
+          set -eo pipefail
+          cargo nextest run --profile ci --workspace --tests --examples --cargo-profile release
+          cargo nextest run --profile ci --workspace --tests --examples --cargo-profile release --message-format libtest-json \
+            | cargo2junit > target/nextest-junit.xml
+      - name: Archive test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.profile }}
+          path: |
+            target/${{ matrix.profile }}-junit.xml
+            target/nextest-junit.xml
+          if-no-files-found: ignore
+      - name: Upload junit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.profile }}
+          path: target/${{ matrix.profile }}-junit.xml
+          if-no-files-found: ignore
       - name: Job summary
         run: |
           {
-            echo "## Test summary";
-            echo "- cargo test --all-features";
+            echo "## Test summary (${{ matrix.profile }})";
+            case "${{ matrix.profile }}" in
+              dev)
+                echo "- cargo test --all-features --no-fail-fast";
+                echo "- raw log: cargo-test-dev.log";
+                ;;
+              release)
+                echo "- cargo test --all-features --release --no-fail-fast";
+                echo "- raw log: cargo-test-release.log";
+                ;;
+              nextest)
+                echo "- cargo nextest run --profile ci --cargo-profile release";
+                echo "- junit artifact: junit-nextest";
+                echo "- targeted retries: nextest per-profile settings";
+                ;;
+            esac
           } >> "$GITHUB_STEP_SUMMARY"
 
   governance-build:
