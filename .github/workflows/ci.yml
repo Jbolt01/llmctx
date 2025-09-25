@@ -51,13 +51,13 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-targets --all-features
+          args: --all-targets --all-features -- -D warnings
       - name: Collect clippy log
         if: steps.clippy.outcome == 'failure'
         continue-on-error: true
         shell: bash
         run: |
-          cargo clippy --all-targets --all-features 2>&1 | tee clippy.log
+          cargo clippy --all-targets --all-features -- -D warnings 2>&1 | tee clippy.log
       - name: Upload clippy log
         if: steps.clippy.outcome == 'failure'
         uses: actions/upload-artifact@v4
